@@ -30,7 +30,7 @@ public class UserRepository {
     // Read a single user
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT id, email, password_hash, created_at " +
-                "FROM users WHERE email = :email";
+                     "FROM users WHERE email = :email";
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("email", email);
         try {
@@ -43,8 +43,8 @@ public class UserRepository {
     // Create user
     public Long save(String email, String passwordHash) {
         String sql = "INSERT INTO users (email, password_hash) " +
-                "VALUES (:email, :passwordHash) " +
-                "RETURNING id";
+                     "VALUES (:email, :passwordHash) " +
+                     "RETURNING id";
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("email", email)
                 .addValue("passwordHash", passwordHash);
