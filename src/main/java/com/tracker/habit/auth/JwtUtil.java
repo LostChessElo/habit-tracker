@@ -29,10 +29,10 @@ public class JwtUtil {
     //default to a day
     public String generateToken(Long userId) {
         return Jwts.builder()
-                .subject(String.valueOf(userId))
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 1 day
-                .signWith(getSigningKey())
+                .subject(String.valueOf(userId)) // payload
+                .issuedAt(new Date()) // time when issued
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // time when expires -> default to 1 day
+                .signWith(getSigningKey()) // sign the token
                 .compact();
     }
 
@@ -43,6 +43,7 @@ public class JwtUtil {
                 .parseSignedClaims(token) // throws an exception if token was tampered with
                 .getPayload()
                 .getSubject();
+
         return Long.parseLong(payload);
     }
 
