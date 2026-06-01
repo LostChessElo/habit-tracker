@@ -51,7 +51,7 @@ public class UserRepository {
         return jdbcTemplate.queryForObject(sql, params, Long.class);
     }
 
-    //Delete user
+    // Delete user
     public void deleteUserByEmail(String email) {
         String query = "DELETE FROM users WHERE email = :email";
         SqlParameterSource params = new MapSqlParameterSource().addValue("email", email);
