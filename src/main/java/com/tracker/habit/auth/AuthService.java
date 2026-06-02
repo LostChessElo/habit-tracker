@@ -1,5 +1,6 @@
 package com.tracker.habit.auth;
 
+import com.tracker.habit.exception.ApiException;
 import com.tracker.habit.user.User;
 import com.tracker.habit.user.UserRepository;
 import org.springframework.http.HttpStatus;

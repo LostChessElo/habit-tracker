@@ -15,4 +15,3 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET}
-

@@ -1,4 +1,4 @@
-package com.tracker.habit.auth;
+package com.tracker.habit.exception;
 
 import org.springframework.http.HttpStatus;
 

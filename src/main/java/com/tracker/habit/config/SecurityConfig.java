@@ -1,5 +1,6 @@
-package com.tracker.habit.auth;
+package com.tracker.habit.config;
 
+import com.tracker.habit.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
