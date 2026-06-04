@@ -18,20 +18,20 @@ public class HabitLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<LocalDate>> getAllHabitLogs(Authentication auth, @PathVariable Long habitId) {
+    public ResponseEntity<List<LocalDate>> getAllHabitLogs(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
         return ResponseEntity.ok(service.getAllHabitLogs(habitId, userId));
     }
 
     @PostMapping
-    public ResponseEntity<Void> markAsCompleted(Authentication auth, @PathVariable Long habitId) {
+    public ResponseEntity<Void> markAsCompleted(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
         Boolean marked = service.logHabit(habitId, userId);
         return marked ? ResponseEntity.ok().build() : ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteLog(Authentication auth, @PathVariable Long habitId) {
+    public ResponseEntity<Void> deleteLog(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
         service.deleteLog(habitId, userId);
         return ResponseEntity.noContent().build();

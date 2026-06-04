@@ -27,7 +27,7 @@ public class HabitController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HabitResponse> getHabit(Authentication auth, @PathVariable Long habitId) {
+    public ResponseEntity<HabitResponse> getHabit(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
         return ResponseEntity.ok(service.getHabit(habitId, userId));
     }
@@ -44,7 +44,7 @@ public class HabitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HabitResponse> updateHabit(Authentication auth, @PathVariable Long habitId, @RequestBody @Valid UpdateHabitRequest updateHabitRequest) {
+    public ResponseEntity<HabitResponse> updateHabit(Authentication auth, @PathVariable("id") Long habitId, @RequestBody @Valid UpdateHabitRequest updateHabitRequest) {
         Long userId = (Long) auth.getPrincipal();
         return ResponseEntity.ok(service.updateHabit(
                 habitId,
@@ -55,7 +55,7 @@ public class HabitController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteHabit(Authentication auth, @PathVariable Long habitId) {
+    public ResponseEntity<Void> deleteHabit(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
         service.deleteHabit(habitId,userId);
         return ResponseEntity.noContent().build();
