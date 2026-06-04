@@ -9,21 +9,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: habittracker
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,9 +21,4 @@ jobs:
           cache: maven
 
       - name: Run tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/habittracker
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: mvn verify
