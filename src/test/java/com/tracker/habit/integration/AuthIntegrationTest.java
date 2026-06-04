@@ -16,10 +16,13 @@ class AuthIntegrationTest extends BaseIntegrationTest {
     @Autowired TestRestTemplate rest;
     @Autowired ObjectMapper mapper;
 
-    // /api/auth/register
+    private static int counter = 0;
+
+    //api/auth/register
     @Test
     void register_validRequest_returns201WithToken() {
-        var body = Map.of("email", "register_new@test.com", "password", "secret123");
+        var body = Map.of("email", "register_new_" + (++counter) + "@test.com",
+                "password", "secret123");
 
         ResponseEntity<String> resp = post("/api/auth/register", body);
 
@@ -29,10 +32,10 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void register_duplicateEmail_returns409() {
-        String email = "register_dup@test.com";
+        String email = "register_dup_" + (++counter) + "@test.com";
         var body = Map.of("email", email, "password", "secret123");
 
-        post("/api/auth/register", body); // first registration
+        post("/api/auth/register", body);
         ResponseEntity<String> second = post("/api/auth/register", body);
 
         assertThat(second.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -49,7 +52,7 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void register_missingPassword_returns400() {
-        var body = Map.of("email", "nopwd@test.com");
+        var body = Map.of("email", "nopwd_" + (++counter) + "@test.com");
 
         ResponseEntity<String> resp = post("/api/auth/register", body);
 
@@ -58,19 +61,20 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void register_invalidEmailFormat_returns400() {
-        var body = Map.of("email", "not-an-email", "password", "secret123");
+        var body = Map.of("email", "not-an-email-" + (++counter),
+                "password", "secret123");
 
         ResponseEntity<String> resp = post("/api/auth/register", body);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // /api/auth/login
+    //api/auth/login
     @Test
     void login_validCredentials_returns200WithToken() {
-        String email = "login_valid@test.com";
+        String email = "login_valid_" + (++counter) + "@test.com";
         var body = Map.of("email", email, "password", "secret123");
-        post("/api/auth/register", body); // register first
+        post("/api/auth/register", body);
 
         ResponseEntity<String> resp = post("/api/auth/login", body);
 
@@ -80,7 +84,7 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void login_wrongPassword_returns401() {
-        String email = "login_wrongpwd@test.com";
+        String email = "login_wrongpwd_" + (++counter) + "@test.com";
         post("/api/auth/register", Map.of("email", email, "password", "correct"));
 
         ResponseEntity<String> resp = post("/api/auth/login",
@@ -91,7 +95,8 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void login_unregisteredEmail_returns401() {
-        var body = Map.of("email", "ghost@test.com", "password", "whatever");
+        var body = Map.of("email", "ghost_" + (++counter) + "@test.com",
+                "password", "whatever");
 
         ResponseEntity<String> resp = post("/api/auth/login", body);
 
@@ -100,12 +105,13 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void login_missingPassword_returns400() {
-        var body = Map.of("email", "missing_pwd@test.com");
+        var body = Map.of("email", "missing_pwd_" + (++counter) + "@test.com");
 
         ResponseEntity<String> resp = post("/api/auth/login", body);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
 
     private ResponseEntity<String> post(String path, Object body) {
         HttpHeaders headers = new HttpHeaders();
