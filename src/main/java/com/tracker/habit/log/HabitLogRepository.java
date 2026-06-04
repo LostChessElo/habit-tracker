@@ -22,6 +22,16 @@ public class HabitLogRepository {
         this.jdbcTemplate = jdbc;
     }
 
+
+
+    public boolean isCompleteToday(Long habitId) {
+        String query =  "SELECT COUNT(*) FROM habit_logs " +
+                "WHERE habit_id = :habit_id AND completed_on = CURRENT_DATE";
+        SqlParameterSource params = new MapSqlParameterSource().addValue("habit_id",habitId);
+        Integer count = jdbcTemplate.queryForObject(query, params, Integer.class);
+        return count != null && count > 0;
+    }
+
     public boolean logToday(Long habitId) {
         String query =  "INSERT INTO habit_logs (habit_id, completed_on) " +
                         "VALUES (:habit_id, CURRENT_DATE) " +
