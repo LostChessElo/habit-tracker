@@ -25,7 +25,7 @@ public class AuthService {
         Optional<User> user = userRepository.findByEmail(email);
 
         // user doesnt exist
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials.");
         }
 

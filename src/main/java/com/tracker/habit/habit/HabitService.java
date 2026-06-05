@@ -81,7 +81,7 @@ public class HabitService {
 
     public Habit verifyOwnership(Long habitId, Long userId) {
         Optional<Habit> habit = habitRepository.findById(habitId);
-        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
+        if (habit.isEmpty() || !habit.get().userId().equals(userId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
         }
         return habit.get();
