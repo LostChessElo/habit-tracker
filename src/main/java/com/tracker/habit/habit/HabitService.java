@@ -5,6 +5,7 @@ import com.tracker.habit.habit.dtos.HabitResponse;
 import com.tracker.habit.log.HabitLogRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,16 +58,16 @@ public class HabitService {
                 )).toList();
     }
 
+    @Transactional
     public HabitResponse updateHabit(Long habitId, Long userid, String name, String description) {
-        Habit oldHabit = habitRepository.verifyOwnership(habitId, userid);
-        String newName = name == null ? oldHabit.name() : name;
-        String newDescription = description == null ? oldHabit.description() : description;
+        Habit habit = habitRepository.verifyOwnership(habitId, userid);
+        String newName = name == null ? habit.name() : name;
+        String newDescription = description == null ? habit.description() : description;
         habitRepository.updateNameAndDescription(habitId, newName, newDescription);
-        Habit habit = habitRepository.findById(habitId).orElseThrow();
         return new HabitResponse(
                 habit.id(),
-                habit.name(),
-                habit.description(),
+                newName,
+                newDescription,
                 habitLogRepository.calculateStreak(habit.id()),
                 habitLogRepository.isCompleteToday(habit.id()),
                 habit.createdAt()
