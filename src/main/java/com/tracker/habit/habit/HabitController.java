@@ -44,7 +44,7 @@ public class HabitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HabitResponse> updateHabit(Authentication auth, @PathVariable("id") Long habitId, @RequestBody @Valid UpdateHabitRequest updateHabitRequest) {
+    public ResponseEntity<HabitResponse> updateHabit(Authentication auth, @PathVariable("id") Long habitId, @RequestBody UpdateHabitRequest updateHabitRequest) {
         Long userId = (Long) auth.getPrincipal();
         return ResponseEntity.ok(service.updateHabit(
                 habitId,

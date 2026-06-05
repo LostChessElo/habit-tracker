@@ -5,6 +5,7 @@ import com.tracker.habit.habit.dtos.HabitResponse;
 import com.tracker.habit.log.HabitLogRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +21,7 @@ public class HabitService {
     }
 
     public HabitResponse createHabit(String name, String description, Long uId) {
-        Long habitId = habitRepository.save(name, description, uId); // save habit
-        Habit habit = habitRepository.findById(habitId).orElseThrow(); // fetch habit
+        Habit habit = habitRepository.save(name, description, uId); // save habit
         return new HabitResponse(
                 habit.id(),
                 habit.name(),
@@ -58,16 +58,16 @@ public class HabitService {
                 )).toList();
     }
 
+    @Transactional
     public HabitResponse updateHabit(Long habitId, Long userid, String name, String description) {
-        Habit oldHabit = verifyOwnership(habitId, userid);
-        String newName = name == null ? oldHabit.name() : name;
-        String newDescription = description == null ? oldHabit.description() : description;
+        Habit habit = verifyOwnership(habitId, userid);
+        String newName = name == null ? habit.name() : name;
+        String newDescription = description == null ? habit.description() : description;
         habitRepository.updateNameAndDescription(habitId, newName, newDescription);
-        Habit habit = habitRepository.findById(habitId).orElseThrow();
         return new HabitResponse(
                 habit.id(),
-                habit.name(),
-                habit.description(),
+                newName,
+                newDescription,
                 habitLogRepository.calculateStreak(habit.id()),
                 habitLogRepository.isCompleteToday(habit.id()),
                 habit.createdAt()
@@ -79,10 +79,9 @@ public class HabitService {
         habitRepository.deleteById(habitId);
     }
 
-
-    private Habit verifyOwnership(Long habitId, Long userId) {
+    public Habit verifyOwnership(Long habitId, Long userId) {
         Optional<Habit> habit = habitRepository.findById(habitId);
-        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
+        if (habit.isEmpty() || !habit.get().userId().equals(userId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
         }
         return habit.get();

@@ -26,7 +26,7 @@ public class HabitLogController {
     @PostMapping
     public ResponseEntity<Void> markAsCompleted(Authentication auth, @PathVariable("id") Long habitId) {
         Long userId = (Long) auth.getPrincipal();
-        Boolean marked = service.logHabit(habitId, userId);
+        boolean marked = service.logHabit(habitId, userId);
         return marked ? ResponseEntity.ok().build() : ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 

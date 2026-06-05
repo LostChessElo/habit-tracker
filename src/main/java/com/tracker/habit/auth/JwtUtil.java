@@ -9,19 +9,21 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Objects;
 
 @Component
 public class JwtUtil {
     @Value("${app.jwt.secret}")
     private String secret;
 
-    public String generateToken(Long userId, Long expirationPeriod) {
-        if (expirationPeriod == null) throw new NullPointerException("Expiration period can not be null");
-        if (expirationPeriod < 0L) throw new IllegalArgumentException("Expiration period can not be negative");
+    public String generateToken(Long userId, Long expirationSeconds) {
+        Long seconds = Objects.requireNonNull(expirationSeconds);
+        if (seconds < 0L) throw new IllegalArgumentException("Expiration period can not be negative");
+
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * expirationPeriod))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * seconds))
                 .signWith(getSigningKey())
                 .compact();
     }
