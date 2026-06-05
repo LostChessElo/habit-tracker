@@ -13,6 +13,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Data-access layer for the {@code habits} table.
+ *
+ * <p>All queries use {@link NamedParameterJdbcTemplate} with named parameters
+ * to prevent SQL injection. Results are mapped to {@link Habit} records via
+ * a shared {@link RowMapper}.</p>
+ */
 @Repository
 public class HabitRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -28,7 +35,17 @@ public class HabitRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // CREATE:
+    /**
+     * Inserts a new habit and returns the persisted record.
+     *
+     * <p>Uses a {@code RETURNING} clause so the database-generated ID and
+     * timestamp are available without a second query.</p>
+     *
+     * @param name        the habit name
+     * @param description the habit description
+     * @param userId      the owning user's ID
+     * @return the newly created {@link Habit} record including its generated ID and timestamp
+     */
     public Habit save(String name, String description, Long userId) {
         String query = "INSERT INTO habits (name, description, user_id) " +
                 "VALUES (:name, :description, :user_id) " +
@@ -40,7 +57,12 @@ public class HabitRepository {
         return jdbcTemplate.queryForObject(query, parameterSource, habitRowMapper);
     }
 
-    // READ
+    /**
+     * Looks up a habit by its primary key.
+     *
+     * @param id the habit ID
+     * @return an {@link Optional} containing the habit, or empty if not found
+     */
     public Optional<Habit> findById(Long id) {
         String query = "SELECT id, user_id, name, description, created_at " +
                  "FROM habits WHERE id = :id";
@@ -52,6 +74,12 @@ public class HabitRepository {
         }
     }
 
+    /**
+     * Returns all habits owned by a given user.
+     *
+     * @param userId the user whose habits to retrieve
+     * @return a list of matching {@link Habit} records; empty if the user has no habits
+     */
     public List<Habit> findAllByUid(Long userId) {
         String query = "SELECT id, user_id, name, description, created_at " +
                 "FROM habits WHERE user_id = :user_id";
@@ -59,14 +87,27 @@ public class HabitRepository {
         return jdbcTemplate.query(query, parameterSource, habitRowMapper);
     }
 
-    // DELETE
+    /**
+     * Deletes a habit by its primary key.
+     *
+     * <p>Cascading deletes in the database schema remove any associated
+     * {@code habit_logs} rows automatically.</p>
+     *
+     * @param id the ID of the habit to delete
+     */
     public void deleteById(Long id) {
         String query = "DELETE FROM habits WHERE id = :id";
         SqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", id);
         jdbcTemplate.update(query, parameterSource);
     }
 
-    // UPDATE:
+    /**
+     * Updates the name and description of an existing habit.
+     *
+     * @param id          the ID of the habit to update
+     * @param name        the new name
+     * @param description the new description
+     */
     public void updateNameAndDescription(Long id,String name,String description) {
         String query = "UPDATE habits " +
                 "SET description = :description, name = :name " +
@@ -77,13 +118,4 @@ public class HabitRepository {
                 .addValue("id", id);
         jdbcTemplate.update(query,parameterSource);
     }
-
-    public Habit verifyOwnership(Long habitId, Long userId) {
-        Optional<Habit> habit = findById(habitId);
-        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
-        }
-        return habit.get();
-    }
-
 }
