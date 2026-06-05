@@ -33,7 +33,7 @@ public class HabitService {
     }
 
     public HabitResponse getHabit(Long habitId, Long userId) {
-        Habit habit = habitRepository.verifyOwnership(habitId, userId);
+        Habit habit = verifyOwnership(habitId, userId);
         int streak = habitLogRepository.calculateStreak(habitId);
         return new HabitResponse(
                 habit.id(),
@@ -60,7 +60,7 @@ public class HabitService {
 
     @Transactional
     public HabitResponse updateHabit(Long habitId, Long userid, String name, String description) {
-        Habit habit = habitRepository.verifyOwnership(habitId, userid);
+        Habit habit = verifyOwnership(habitId, userid);
         String newName = name == null ? habit.name() : name;
         String newDescription = description == null ? habit.description() : description;
         habitRepository.updateNameAndDescription(habitId, newName, newDescription);
@@ -75,7 +75,15 @@ public class HabitService {
     }
 
     public void deleteHabit(Long habitId, Long userId) {
-        habitRepository.verifyOwnership(habitId, userId);
+        verifyOwnership(habitId, userId);
         habitRepository.deleteById(habitId);
+    }
+
+    public Habit verifyOwnership(Long habitId, Long userId) {
+        Optional<Habit> habit = habitRepository.findById(habitId);
+        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
+        }
+        return habit.get();
     }
 }
