@@ -20,8 +20,7 @@ public class HabitService {
     }
 
     public HabitResponse createHabit(String name, String description, Long uId) {
-        Long habitId = habitRepository.save(name, description, uId); // save habit
-        Habit habit = habitRepository.findById(habitId).orElseThrow(); // fetch habit
+        Habit habit = habitRepository.save(name, description, uId); // save habit
         return new HabitResponse(
                 habit.id(),
                 habit.name(),

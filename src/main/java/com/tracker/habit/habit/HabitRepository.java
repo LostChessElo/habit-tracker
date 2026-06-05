@@ -29,15 +29,15 @@ public class HabitRepository {
     }
 
     // CREATE:
-    public Long save(String name, String description, Long userId) {
+    public Habit save(String name, String description, Long userId) {
         String query = "INSERT INTO habits (name, description, user_id) " +
                 "VALUES (:name, :description, :user_id) " +
-                "RETURNING id";
+                "RETURNING id, name, description, user_id, created_at";
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("name", name)
                 .addValue("description", description)
                 .addValue("user_id",userId);
-        return jdbcTemplate.queryForObject(query, parameterSource, Long.class);
+        return jdbcTemplate.queryForObject(query, parameterSource, habitRowMapper);
     }
 
     // READ
