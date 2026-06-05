@@ -22,26 +22,18 @@ public class HabitLogService {
     }
 
     public boolean logHabit(Long habitId, Long userId) {
-        Habit habit = verifyOwnership(habitId, userId);
+        Habit habit = habitRepository.verifyOwnership(habitId, userId);
         return habitLogRepository.logToday(habit.id());
     }
 
     public void deleteLog(Long habitId, Long userId) {
-        Habit habit = verifyOwnership(habitId, userId);
+        Habit habit = habitRepository.verifyOwnership(habitId, userId);
         habitLogRepository.deleteToday(habit.id());
     }
 
     public List<LocalDate> getAllHabitLogs(Long habitId, Long userId) {
-        Habit habit = verifyOwnership(habitId, userId);
+        Habit habit = habitRepository.verifyOwnership(habitId, userId);
         List<HabitLog> logs = habitLogRepository.findAllByHabitId(habit.id());
         return logs.stream().map(HabitLog::completedOn).toList();
-    }
-
-    private Habit verifyOwnership(Long habitId, Long userId) {
-        Optional<Habit> habit = habitRepository.findById(habitId);
-        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
-        }
-        return habit.get();
     }
 }

@@ -1,6 +1,8 @@
 package com.tracker.habit.habit;
 
+import com.tracker.habit.exception.ApiException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -74,6 +76,14 @@ public class HabitRepository {
                 .addValue("name", name)
                 .addValue("id", id);
         jdbcTemplate.update(query,parameterSource);
+    }
+
+    public Habit verifyOwnership(Long habitId, Long userId) {
+        Optional<Habit> habit = findById(habitId);
+        if (!habit.isPresent() || !habit.get().userId().equals(userId)) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Habit not found.");
+        }
+        return habit.get();
     }
 
 }
