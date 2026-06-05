@@ -17,10 +17,9 @@ public class JwtUtil {
     private String secret;
 
     public String generateToken(Long userId, Long expirationSeconds) {
-
         Long seconds = Objects.requireNonNull(expirationSeconds);
-//        if (expirationSeconds == null) throw new NullPointerException("Expiration period can not be null");
         if (seconds < 0L) throw new IllegalArgumentException("Expiration period can not be negative");
+
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .issuedAt(new Date())

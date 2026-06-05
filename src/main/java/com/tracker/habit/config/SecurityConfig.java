@@ -22,12 +22,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        /*
-         * Disable CSRF -> we dont need to protect against cross site request forgery as we dont have any cookies to exploit
-         * we make use of stateless JSON web tokens to validate a user
-         * add JwtAuthFilter layer before springs UsernanePasswordAuthenticationFilter to alloow a security context to be filled
-         * Permit all auth endpoints to be publicly accessible so that register and logins are public
-         */
         http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
