@@ -45,9 +45,14 @@ class JwtUtilTest {
     void tamperedToken_throwsException() {
         String token = jwtUtil.generateToken(id);
 
-        char lastChar = token.charAt(token.length() - 1);
-        char tamperedChar = (lastChar == 'A') ? 'B' : 'A';
-        String tamperedToken = token.substring(0, token.length() - 1) + tamperedChar;
+        String[] parts = token.split("\\.");
+        String signature = parts[2];
+        int midIndex = signature.length() / 2;
+        char midChar = signature.charAt(midIndex);
+        char tamperedChar = (midChar == 'A') ? 'B' : 'A';
+        String tamperedSignature = signature.substring(0, midIndex) + tamperedChar + signature.substring(midIndex + 1);
+        String tamperedToken = parts[0] + "." + parts[1] + "." + tamperedSignature;
+
         assertThrows(JwtException.class, () -> jwtUtil.extractUserId(tamperedToken));
     }
 
