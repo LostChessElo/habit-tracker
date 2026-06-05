@@ -1,7 +1,5 @@
 package com.tracker.habit.auth;
 
-import com.tracker.habit.auth.JwtAuthFilter;
-import com.tracker.habit.auth.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
