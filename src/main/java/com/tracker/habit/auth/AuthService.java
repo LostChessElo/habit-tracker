@@ -9,6 +9,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * Service handling user authentication: registration and login.
+ *
+ * <p>On success both operations return a signed JWT that the client
+ * must include as a {@code Bearer} token on all subsequent requests.</p>
+ */
+
 @Service
 public class AuthService {
     private final PasswordEncoder passwordEncoder;
@@ -21,6 +28,17 @@ public class AuthService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Authenticates a user by email and password.
+     *
+     * <p>A generic "Invalid credentials" error is returned for both unknown
+     * email addresses and wrong passwords to prevent user enumeration.</p>
+     *
+     * @param email    the user's email address
+     * @param password the plaintext password to verify
+     * @return a signed JWT for the authenticated user
+     * @throws ApiException with {@code 401 UNAUTHORIZED} if credentials are invalid
+     */
     public String login(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
 
@@ -40,6 +58,18 @@ public class AuthService {
 
     }
 
+    /**
+     * Registers a new user account.
+     *
+     * <p>The password is hashed with BCrypt before persistence.
+     * The newly created user is immediately signed in, a JWT is returned
+     * so the client does not need a separate login call.</p>
+     *
+     * @param email    the desired email address; must be unique
+     * @param password the plaintext password, which will be hashed
+     * @return a signed JWT for the newly created user
+     * @throws ApiException with {@code 409 CONFLICT} if the email is already registered
+     */
     public String register(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
 

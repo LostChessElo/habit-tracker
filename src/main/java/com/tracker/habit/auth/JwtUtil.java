@@ -11,6 +11,14 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
 
+/**
+ * Utility component for creating and parsing JWT tokens.
+ *
+ * <p>Tokens are HMAC-SHA signed using the secret configured via
+ * {@code app.jwt.secret} (Base64-encoded). The subject claim stores
+ * the numeric user ID so the filter chain can reconstruct the principal
+ * without a database lookup.</p>
+ */
 @Component
 public class JwtUtil {
     @Value("${app.jwt.secret}")
@@ -28,7 +36,12 @@ public class JwtUtil {
                 .compact();
     }
 
-    //default to a day
+    /**
+     * Generates a JWT with a expiry of 24 hours.
+     *
+     * @param userId the ID of the user to embed as the token subject
+     * @return a compact, signed JWT string valid for one day
+     */
     public String generateToken(Long userId) {
         return Jwts.builder()
                 .subject(String.valueOf(userId)) // payload
@@ -38,6 +51,13 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Validates a JWT and extracts the user ID from its subject claim.
+     *
+     * @param token the compact JWT string to parse
+     * @return the user ID stored in the token subject
+     * @throws io.jsonwebtoken.JwtException if the token is expired, malformed, or has an invalid signature
+     */
     public Long extractUserId(String token) {
         String payload = Jwts.parser()
                 .verifyWith(getSigningKey()) // verify token signature
@@ -49,6 +69,11 @@ public class JwtUtil {
         return Long.parseLong(payload);
     }
 
+    /**
+     * Decodes the Base64 secret and constructs the HMAC signing key.
+     *
+     * @return the {@link SecretKey} used for signing and verification
+     */
     private SecretKey getSigningKey() {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
