@@ -2,18 +2,22 @@
 
 A streak-based habit tracking web application designed to help users build consistency through daily check-ins, progress visibility, and a gamified Minecraft-inspired interface.
 
+📐 **[Architecture, database schema & feature docs →](https://github.com/LostChessElo/habit-tracker/wiki)**
+
 ---
 
 ## Project Status
 
-**Backend** — Authentication complete. Habit feature in progress.  
-**Frontend** — Not yet scaffolded.  
-**Deployment** — Not yet deployed.
+| Area                              | Status         |
+| ---------------------------------- | -------------- |
+| Backend — Authentication           | ✅ Complete     |
+| Backend — Habit CRUD               | ✅ Complete     |
+| Backend — Habit Logging & Streaks  | ✅ Complete     |
+| Frontend                           | 🔲 Not started |
+| Deployment                         | 🔲 Not started |
 
 ---
-## Docs 
-📐 **[Architecture →](https://github.com/LostChessElo/habit-tracker/wiki)**
---- 
+
 ## Tech Stack
 
 ### Backend
@@ -61,6 +65,8 @@ Controller reads it via Authentication.getPrincipal().
 UserId never comes from the request body.
 ```
 
+See the [wiki](https://github.com/LostChessElo/habit-tracker/wiki) for full architecture diagrams, database schema, and per-feature design docs (Authentication, Habits, Habit Logs, Exceptions, Users).
+
 ### Package structure
 
 ```
@@ -77,6 +83,18 @@ com.tracker.habit/
 ├── exception/
 │   ├── ApiException.java          # Runtime exception with HTTP status
 │   └── GlobalExceptionHandler.java # @ControllerAdvice — maps exceptions to JSON errors
+├── habit/
+│   ├── Habit.java                 # Domain record
+│   ├── HabitController.java       # GET/POST/PUT/DELETE /api/habits
+│   ├── HabitService.java          # Business logic, ownership verification
+│   ├── HabitRepository.java       # Raw SQL CRUD via NamedParameterJdbcTemplate
+│   └── dto/
+│       └── HabitDtos.java         # Create/update/response DTOs
+├── habitlog/
+│   ├── HabitLog.java              # Domain record
+│   ├── HabitLogController.java    # POST/DELETE/GET /api/habits/{id}/log
+│   ├── HabitLogService.java       # Streak calculation logic
+│   └── HabitLogRepository.java    # Idempotent daily log/unlog
 ├── user/
 │   ├── User.java                  # Domain record
 │   └── UserRepository.java        # findByEmail, save
@@ -104,6 +122,16 @@ Flyway runs on startup and applies migrations in version order:
 - All routes except `/api/auth/**` require a valid token
 - Global exception handler returns consistent JSON error responses with appropriate HTTP status codes
 
+### Habit CRUD
+- Full create/read/update/delete for habits, scoped to the authenticated user
+- Ownership verification — a user can only access their own habits
+- `NamedParameterJdbcTemplate` for raw SQL data access
+
+### Habit Logging & Streaks
+- Daily check-in (log) and undo (unlog), idempotent per day
+- Streak calculation — consecutive day count walking backwards from today
+- Enriched habit responses include streak count and `completedToday` boolean
+
 ### CI/CD pipeline
 - GitHub Actions workflow runs on every push
 - Builds with Maven, runs tests
@@ -113,22 +141,6 @@ Flyway runs on startup and applies migrations in version order:
 - `docker-compose.yml` spins up a local PostgreSQL 16 instance
 - Spring Boot DevTools configured for auto-restart
 - `.env` file used for database credentials (gitignored)
-
----
-
-## What's In Progress
-
-### Habit feature (next milestone)
-The following is planned and being actively worked on:
-
-- `Habit.java` record + `HabitDtos.java` (create/update/response)
-- `HabitRepository.java` — raw SQL CRUD with `NamedParameterJdbcTemplate`
-- `HabitService.java` — business logic, ownership verification
-- `HabitController.java` — `GET/POST/PUT/DELETE /api/habits`, `GET /api/habits/{id}`
-- `HabitLog.java` + `HabitLogRepository.java` — daily log/unlog, idempotent insert
-- `HabitLogController.java` — `POST/DELETE/GET /api/habits/{id}/log`
-- Streak calculation — consecutive day count walking backwards from today
-- Enriched `HabitResponse` — streak count + `completedToday` boolean on every habit
 
 ---
 
@@ -152,7 +164,14 @@ The following is planned and being actively worked on:
    POSTGRES_DB=habitdb
    POSTGRES_USER=your_user
    POSTGRES_PASSWORD=your_password
+   JWT_SECRET=your_base64_encoded_secret
+   JWT_EXPIRATION=3600000
    ```
+
+   > ⚠️ `JWT_SECRET` **must** be a base64-encoded key of at least 256 bits (32 bytes). The application will fail to start without a valid key of sufficient length. Generate one with:
+   > ```bash
+   > openssl rand -base64 32
+   > ```
 
 3. Start the database:
    ```bash
@@ -212,7 +231,7 @@ All subsequent requests require the token as a Bearer header:
 Authorization: Bearer <token>
 ```
 
-### Habits *(in progress)*
+### Habits
 
 ```
 GET    /api/habits           # list all habits for the authenticated user
@@ -220,11 +239,17 @@ POST   /api/habits           # create a habit
 GET    /api/habits/{id}      # get a single habit with streak data
 PUT    /api/habits/{id}      # update a habit
 DELETE /api/habits/{id}      # delete a habit
+```
 
+### Habit Logs
+
+```
 POST   /api/habits/{id}/log  # mark habit complete for today
 DELETE /api/habits/{id}/log  # unmark habit for today
 GET    /api/habits/{id}/log  # get log history
 ```
+
+For full request/response schemas and design notes, see the [Habits](https://github.com/LostChessElo/habit-tracker/wiki/Habits) and [Habit Logs](https://github.com/LostChessElo/habit-tracker/wiki/Habit-Logs) wiki pages.
 
 ---
 
@@ -235,7 +260,7 @@ GET    /api/habits/{id}/log  # get log history
 | `POSTGRES_DB` | Database name |
 | `POSTGRES_USER` | Database user |
 | `POSTGRES_PASSWORD` | Database password |
-| `JWT_SECRET` | Secret key for signing JWTs |
+| `JWT_SECRET` | Base64-encoded signing key, **≥256 bits (32 bytes)**. App fails to start if invalid or too short. |
 | `JWT_EXPIRATION` | Token expiry in milliseconds |
 
 ---
@@ -245,8 +270,8 @@ GET    /api/habits/{id}/log  # get log history
 - [x] Project foundation & repository setup
 - [x] CI/CD pipeline (GitHub Actions + ggshield)
 - [x] Authentication (register, login, JWT)
-- [ ] Habit CRUD API
-- [ ] Habit logging & streak calculation
+- [x] Habit CRUD API
+- [x] Habit logging & streak calculation
 - [ ] Frontend scaffold (React + Vite)
 - [ ] Minecraft-style UI with cursor-tracking character
 - [ ] Deploy — Neon (DB), Railway (API), Vercel (frontend)
