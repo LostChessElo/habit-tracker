@@ -11,7 +11,9 @@ A streak-based habit tracking web application designed to help users build consi
 **Deployment** — Not yet deployed.
 
 ---
-
+## Docs 
+📐 **[Architecture →](https://github.com/LostChessElo/habit-tracker/wiki)**
+--- 
 ## Tech Stack
 
 ### Backend
